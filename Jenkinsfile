@@ -45,7 +45,7 @@ pipeline {
             steps {
                 echo 'Stage 6: Integration Tests on Staging'
                 echo 'Task: Run integration tests on the staging environment to ensure the application functions as expected in a production-like environment.'
-                echo 'Tool: Selenium Driver'
+                echo 'Tools: Selenium Driver'
             }
         }
 
