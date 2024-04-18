@@ -4,84 +4,89 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Build the code using Maven
-                sh 'mvn clean package'
+                echo 'Stage 1: Build'
+                echo 'Task: Build the code using a build automation tool to compile and package your code.'
+                echo 'Tool: Maven'
             }
         }
+
         stage('Unit and Integration Tests') {
             steps {
-                // Run unit tests using JUnit
-                sh 'mvn test'
-                // Run integration tests using Selenium or similar
-                sh 'mvn integration-test'
+                echo 'Stage 2: Unit and Integration Tests'
+                echo 'Task: Run unit tests to ensure the code functions as expected, and run integration tests to ensure the different components of the application work together as expected.'
+                echo 'Tools: JUnit, Selenium'
             }
         }
+
         stage('Code Analysis') {
             steps {
-                // Integrate a code analysis tool like SonarQube
-                // This requires SonarQube server to be configured in Jenkins
-                script {
-                    // Run SonarQube analysis
-                    // Example: withSonarQubeEnv('SonarQube') {
-                    //     sh 'mvn sonar:sonar'
-                    // }
-                }
+                echo 'Stage 3: Code Analysis'
+                echo 'Task: Integrate a code analysis tool to analyze the code and ensure it meets industry standards.'
+                echo 'Tool: SonarQube'
             }
         }
+
         stage('Security Scan') {
             steps {
-                // Perform security scan using tools like OWASP ZAP or SonarQube
-                // This requires configuring security tools in Jenkins
-                script {
-                    // Run security scan
-                    // Example: sh 'mvn owasp:dependency-check'
-                }
+                echo 'Stage 4: Security Scan'
+                echo 'Task: Perform a security scan on the code using a tool to identify any vulnerabilities.'
+                echo 'Tool: OWASP ZAP'
             }
         }
+
         stage('Deploy to Staging') {
             steps {
-                // Deploy application to staging server
-                // This requires SSH credentials or other deployment configurations
-                script {
-                    // Example: sh 'scp target/myapp.war user@staging:/path/to/deploy'
-                }
+                echo 'Stage 5: Deploy to Staging'
+                echo 'Task: Deploy the application to a staging server (e.g., AWS EC2 instance).'
             }
         }
+
         stage('Integration Tests on Staging') {
             steps {
-                // Run integration tests on staging environment
-                // This may involve hitting endpoints or running scripts on the staging server
-                script {
-                    // Example: sh 'curl http://staging:8080/test'
-                }
+                echo 'Stage 6: Integration Tests on Staging'
+                echo 'Task: Run integration tests on the staging environment to ensure the application functions as expected in a production-like environment.'
+                echo 'Tool: Selenium Driver'
             }
         }
+
         stage('Deploy to Production') {
             steps {
-                // Deploy application to production server
-                // This requires similar configurations as staging deployment
-                script {
-                    // Example: sh 'scp target/myapp.war user@production:/path/to/deploy'
-                }
+                echo 'Stage 7: Deploy to Production'
+                echo 'Task: Deploy the application to a production server (e.g., AWS EC2 instance).'
             }
         }
     }
 
-    post {
+        post {
         always {
-            // Clean up steps or notifications
-        }
-        success {
-            // Send notification email on success
-            emailext subject: 'Pipeline Success',
-                      body: 'Pipeline completed successfully.',
-                      to: 'sandriyafernandes35@gmail.com'
+            emailext (
+                subject: "Pipeline Status: ${currentBuild.currentResult}",
+                body: """
+                    Pipeline Status: ${currentBuild.currentResult}
+                    Jenkins URL: ${env.BUILD_URL}
+                    Build Number: ${env.BUILD_NUMBER}
+                """,
+                attachLog: true,
+                to: 'sandriyafernandes35@gmail.com'
+            )
         }
         failure {
-            // Send notification email on failure
-            emailext subject: 'Pipeline Failure',
-                      body: 'Pipeline failed. Please check logs.',
-                      to: 'sandriyafernandes35@gmail.com'
+            when {
+                expression {
+                    it.name == 'Unit and Integration Tests' || it.name == 'Security Scan'
+                }
+            }
+            emailext (
+                subject: "${it.name} Stage Failed: ${currentBuild.currentResult}",
+                body: """
+                    ${it.name} Stage Status: ${currentBuild.currentResult}
+                    Jenkins URL: ${env.BUILD_URL}
+                    Build Number: ${env.BUILD_NUMBER}
+                """,
+                attachLog: true,
+                to: 'sandriyafernandes35@gmail.com'
+            )
         }
     }
+
 }
