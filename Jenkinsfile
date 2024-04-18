@@ -56,37 +56,17 @@ pipeline {
             }
         }
     }
-
-        post {
-        always {
-            emailext (
-                subject: "Pipeline Status: ${currentBuild.currentResult}",
-                body: """
-                    Pipeline Status: ${currentBuild.currentResult}
-                    Jenkins URL: ${env.BUILD_URL}
-                    Build Number: ${env.BUILD_NUMBER}
-                """,
-                attachLog: true,
-                to: 'sandriyafernandes35@gmail.com'
-            )
-        }
-        failure {
-            when {
-                expression {
-                    it.name == 'Unit and Integration Tests' || it.name == 'Security Scan'
-                }
-            }
-            emailext (
-                subject: "${it.name} Stage Failed: ${currentBuild.currentResult}",
-                body: """
-                    ${it.name} Stage Status: ${currentBuild.currentResult}
-                    Jenkins URL: ${env.BUILD_URL}
-                    Build Number: ${env.BUILD_NUMBER}
-                """,
-                attachLog: true,
-                to: 'sandriyafernandes35@gmail.com'
-            )
-        }
+    post {
+    success {
+        emailext subject: "Pipeline Success",
+            body: "The pipeline has completed successfully.",
+            to: "sandriyafernandes35@gmail.com",
+            attachLog: true
     }
-
+    failure {
+        emailext subject: "Pipeline Failure",
+            body: "The pipeline has failed.",
+            to: "sandriyafernandes35@gmail.com",
+            attachLog: true
+    }
 }
