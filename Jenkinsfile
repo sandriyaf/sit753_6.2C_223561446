@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                echo 'Stage 1: Build'
+                echo 'Stage 1: Build '
                 echo 'Task: Build the code using a build automation tool to compile and package your code.'
                 echo 'Tool: Maven'
             }
