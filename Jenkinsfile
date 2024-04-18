@@ -1,50 +1,87 @@
 pipeline {
     agent any
-    
-    environment {
-        DIRECTORY_PATH = "/path/to/code"
-        TESTING_ENVIRONMENT = "testing_environment"
-        PRODUCTION_ENVIRONMENT = "your_name"
-    }
-    
+
     stages {
         stage('Build') {
             steps {
-                echo "Fetch the source code from the directory path specified by the environment variable: ${DIRECTORY_PATH}"
-                echo "Compile the code and generate any necessary artifacts"
+                // Build the code using Maven
+                sh 'mvn clean package'
             }
         }
-        
-        stage('Test') {
+        stage('Unit and Integration Tests') {
             steps {
-                echo "Running unit tests"
-                echo "Running integration tests"
+                // Run unit tests using JUnit
+                sh 'mvn test'
+                // Run integration tests using Selenium or similar
+                sh 'mvn integration-test'
             }
         }
-        
-        stage('Code Quality Check') {
+        stage('Code Analysis') {
             steps {
-                echo "Checking the quality of the code"
+                // Integrate a code analysis tool like SonarQube
+                // This requires SonarQube server to be configured in Jenkins
+                script {
+                    // Run SonarQube analysis
+                    // Example: withSonarQubeEnv('SonarQube') {
+                    //     sh 'mvn sonar:sonar'
+                    // }
+                }
             }
         }
-        
-        stage('Deploy') {
+        stage('Security Scan') {
             steps {
-                echo "Deploy the application to a testing environment specified by the environment variable: ${TESTING_ENVIRONMENT}"
+                // Perform security scan using tools like OWASP ZAP or SonarQube
+                // This requires configuring security tools in Jenkins
+                script {
+                    // Run security scan
+                    // Example: sh 'mvn owasp:dependency-check'
+                }
             }
         }
-        
-        stage('Approval') {
+        stage('Deploy to Staging') {
             steps {
-                echo "Waiting for manual approval..."
-                sleep time: 10, unit: 'SECONDS'
+                // Deploy application to staging server
+                // This requires SSH credentials or other deployment configurations
+                script {
+                    // Example: sh 'scp target/myapp.war user@staging:/path/to/deploy'
+                }
             }
         }
-        
+        stage('Integration Tests on Staging') {
+            steps {
+                // Run integration tests on staging environment
+                // This may involve hitting endpoints or running scripts on the staging server
+                script {
+                    // Example: sh 'curl http://staging:8080/test'
+                }
+            }
+        }
         stage('Deploy to Production') {
             steps {
-                echo "Deploying the code to the production environment: ${PRODUCTION_ENVIRONMENT}"
+                // Deploy application to production server
+                // This requires similar configurations as staging deployment
+                script {
+                    // Example: sh 'scp target/myapp.war user@production:/path/to/deploy'
+                }
             }
+        }
+    }
+
+    post {
+        always {
+            // Clean up steps or notifications
+        }
+        success {
+            // Send notification email on success
+            emailext subject: 'Pipeline Success',
+                      body: 'Pipeline completed successfully.',
+                      to: 'sandriyafernandes35@email.com'
+        }
+        failure {
+            // Send notification email on failure
+            emailext subject: 'Pipeline Failure',
+                      body: 'Pipeline failed. Please check logs.',
+                      to: 'sandriyafernandes35@email.com'
         }
     }
 }
